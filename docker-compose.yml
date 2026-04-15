@@ -1,0 +1,88 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: hotelsearch-postgres-app
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: hotelsearch
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      TZ: UTC
+      PGTZ: UTC
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_app_data:/var/lib/postgresql/data
+    networks:
+      - hotelsearch_net
+
+  kafka:
+      image: apache/kafka-native:3.8.0
+      container_name: hotelsearch-kafka-app
+      restart: unless-stopped
+      ports:
+        - "9092:9092"
+        - "9093:9093"
+      environment:
+        KAFKA_LISTENERS: CONTROLLER://0.0.0.0:9091,HOST://0.0.0.0:9092,DOCKER://0.0.0.0:9093
+        KAFKA_ADVERTISED_LISTENERS: HOST://localhost:9092,DOCKER://kafka:9093
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,DOCKER:PLAINTEXT,HOST:PLAINTEXT
+        KAFKA_NODE_ID: 1
+        KAFKA_PROCESS_ROLES: broker,controller
+        KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+        KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9091
+        KAFKA_INTER_BROKER_LISTENER_NAME: DOCKER
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      volumes:
+        - kafka_app_data:/apache/kafka
+      networks:
+        - hotelsearch_net
+
+  kafka-ui:
+      image: provectuslabs/kafka-ui:latest
+      container_name: hotelsearch-kafka-ui-app
+      restart: unless-stopped
+      depends_on:
+        - kafka
+      ports:
+        - "8081:8080"
+      environment:
+        KAFKA_CLUSTERS_0_NAME: local
+        KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9093
+        DYNAMIC_CONFIG_ENABLED: "true"
+      networks:
+        - hotelsearch_net
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: hotelsearch-app
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/hotelsearch?currentSchema=public
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: postgres
+      SPRING_DATASOURCE_DRIVER_CLASS_NAME: org.postgresql.Driver
+      SPRING_DATASOURCE_HIKARI_SCHEMA: public
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SPRING_JPA_SHOW_SQL: "true"
+      SPRING_JPA_PROPERTIES_HIBERNATE_JDBC_TIME_ZONE: UTC
+      SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: public
+      SPRING_JPA_DATABASE_PLATFORM: org.hibernate.dialect.PostgreSQLDialect
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9093
+      APP_KAFKA_TOPIC_HOTEL_SEARCHES: hotel_availability_searches
+    networks:
+      - hotelsearch_net
+
+volumes:
+  postgres_app_data:
+  kafka_app_data:
+
+networks:
+  hotelsearch_net:
+    driver: bridge

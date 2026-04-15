@@ -1,0 +1,14 @@
+com\pcabrera\hotel_search\TestcontainersConfiguration.class
+com\pcabrera\hotel_search\application\service\AgeSignatureServiceTest.class
+com\pcabrera\hotel_search\infrastructure\adapter\out\persistence\SearchPersistenceAdapterTest.class
+com\pcabrera\hotel_search\application\service\SearchValidatorServiceTest.class
+com\pcabrera\hotel_search\application\service\CountSearchServiceTest.class
+com\pcabrera\hotel_search\application\usecase\CountSearchUseCaseTest.class
+com\pcabrera\hotel_search\application\service\SearchMessageFactoryServiceTest.class
+com\pcabrera\hotel_search\KafkaTestMock.class
+com\pcabrera\hotel_search\application\service\SearchServiceTest.class
+com\pcabrera\hotel_search\infrastructure\adapter\in\SearchControllerTest.class
+com\pcabrera\hotel_search\infrastructure\adapter\out\kafka\SearchKafkaProducerTest.class
+com\pcabrera\hotel_search\SearchTestMock.class
+com\pcabrera\hotel_search\application\usecase\CreateSearchUseCaseTest.class
+com\pcabrera\hotel_search\infrastructure\adapter\out\kafka\SearchKafkaConsumerTest.class
